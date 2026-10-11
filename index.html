@@ -2,29 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <title>SI BRO FIGHTER</title>
-  <link rel="stylesheet" href="css/game.css?v=4">
+  <link rel="stylesheet" href="css/game.css?v=5">
 </head>
 <body>
   <div id="app">
     <canvas id="c" tabindex="0" aria-label="SI BRO FIGHTER"></canvas>
     <div id="touch">
-      <div class="row">
-        <button data-k="left" type="button">◀</button>
-        <button data-k="down" type="button">▼</button>
-        <button data-k="right" type="button">▶</button>
-        <button data-k="block" type="button">BLK</button>
-        <button data-k="lp" type="button">LP</button>
-        <button data-k="hp" type="button">HP</button>
-        <button data-k="lk" type="button">LK</button>
-        <button data-k="hk" type="button">HK</button>
+      <div class="cluster move">
+        <div class="row">
+          <button data-k="left" type="button">◀</button>
+          <button data-k="down" type="button">▼</button>
+          <button data-k="right" type="button">▶</button>
+        </div>
+        <div class="row">
+          <button data-k="up" type="button">JUMP</button>
+        </div>
       </div>
-      <div class="row">
-        <button data-k="up" type="button">JUMP</button>
-        <button data-k="s1" type="button">SP1</button>
-        <button data-k="s2" type="button">SP2</button>
-        <button data-k="super" type="button">SUPER</button>
+      <div class="cluster fight">
+        <div class="row">
+          <button data-k="block" type="button">BLK</button>
+          <button data-k="lp" type="button">LP</button>
+          <button data-k="hp" type="button">HP</button>
+          <button data-k="lk" type="button">LK</button>
+          <button data-k="hk" type="button">HK</button>
+        </div>
+        <div class="row">
+          <button data-k="s1" type="button">SP1</button>
+          <button data-k="s2" type="button">SP2</button>
+          <button data-k="super" type="button">SUPER</button>
+        </div>
       </div>
     </div>
   </div>

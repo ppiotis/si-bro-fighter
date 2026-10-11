@@ -1,16 +1,21 @@
 html, body {
   margin: 0;
   height: 100%;
+  height: 100dvh;
   background: #05060a;
   color: #f4f7ff;
   font-family: Impact, Haettenschweiler, "Arial Black", sans-serif;
   overflow: hidden;
+  overscroll-behavior: none;
   user-select: none;
   -webkit-user-select: none;
+  touch-action: none;
 }
 
 #app {
+  position: relative;
   height: 100%;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
 }
@@ -29,10 +34,18 @@ canvas {
   display: none;
   flex-direction: column;
   gap: 6px;
-  padding: 8px 8px 12px;
+  padding: 8px 8px calc(12px + env(safe-area-inset-bottom));
   background: linear-gradient(#12141c, #07080c);
   border-top: 2px solid #2a3148;
   flex-shrink: 0;
+}
+
+.cluster {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  width: 100%;
 }
 
 .row {
@@ -83,6 +96,76 @@ canvas {
 
 @media (pointer: coarse), (max-width: 900px) {
   #touch { display: flex; }
+}
+
+/* Phone turned sideways: the fight fills the screen, controls float on top. */
+@media (orientation: landscape) and (max-height: 520px) {
+  html, body {
+    position: fixed;
+    inset: 0;
+    width: var(--vvw, 100dvw);
+    height: var(--vvh, 100dvh);
+  }
+
+  #app {
+    position: fixed;
+    top: var(--vv-top, 0px);
+    left: var(--vv-left, 0px);
+    width: var(--vvw, 100dvw);
+    height: var(--vvh, 100dvh);
+    display: block;
+  }
+
+  canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  #touch {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    gap: 12px;
+    background: transparent;
+    border: none;
+    pointer-events: none;
+    padding:
+      max(6px, env(safe-area-inset-top))
+      max(8px, env(safe-area-inset-right))
+      max(6px, env(safe-area-inset-bottom))
+      max(8px, env(safe-area-inset-left));
+  }
+
+  #touch .cluster {
+    pointer-events: none;
+    width: auto;
+  }
+
+  #touch .move { width: min(34vw, 280px); }
+  #touch .fight { width: min(54vw, 460px); }
+
+  #touch button {
+    pointer-events: auto;
+    min-height: 40px;
+    background: rgba(8, 12, 22, 0.22);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+  }
+
+  #touch button:active,
+  #touch button.held {
+    background: rgba(255, 183, 3, 0.55);
+    color: #1a1204;
+    text-shadow: none;
+    border-color: rgba(255, 255, 255, 0.85);
+  }
 }
 
 #testlog[hidden] { display: none !important; }

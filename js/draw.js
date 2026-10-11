@@ -1372,10 +1372,13 @@ function render() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   var w = canvas.clientWidth || VIEW_W;
   var h = canvas.clientHeight || VIEW_H;
-  var sc = Math.min(w / VIEW_W, h / VIEW_H);
+  var cover = landscapePhone();
+  var sc = cover ? Math.max(w / VIEW_W, h / VIEW_H) : Math.min(w / VIEW_W, h / VIEW_H);
   var ox = (w - VIEW_W * sc) / 2;
-  var oy = (h - VIEW_H * sc) / 2;
-  if (h > w) oy = 8;
+  var extraY = h - VIEW_H * sc;
+  // Landscape phones are wider than 16:9. Pin the HUD to the top and crop the floor.
+  var oy = cover ? (extraY < 0 ? 0 : extraY / 2) : extraY / 2;
+  if (!cover && h > w) oy = 8;
   G.layout = { ox: ox, oy: oy, sc: sc };
   ctx.fillStyle = "#05060a";
   ctx.fillRect(0, 0, w, h);
@@ -1405,6 +1408,25 @@ function render() {
 }
 
 var canvas, ctx;
+function landscapePhone() {
+  return window.matchMedia("(orientation: landscape) and (max-height: 520px)").matches;
+}
+function fitViewport() {
+  var vv = window.visualViewport;
+  var root = document.documentElement.style;
+  if (vv && landscapePhone()) {
+    root.setProperty("--vvw", vv.width + "px");
+    root.setProperty("--vvh", vv.height + "px");
+    root.setProperty("--vv-top", vv.offsetTop + "px");
+    root.setProperty("--vv-left", vv.offsetLeft + "px");
+  } else {
+    root.removeProperty("--vvw");
+    root.removeProperty("--vvh");
+    root.removeProperty("--vv-top");
+    root.removeProperty("--vv-left");
+  }
+  resize();
+}
 function resize() {
   var dpr = Math.min(2, window.devicePixelRatio || 1);
   var w = canvas.clientWidth || window.innerWidth;
@@ -1482,9 +1504,14 @@ function boot() {
       }
     }
   }
-  resize();
+  fitViewport();
   canvas.focus();
-  window.addEventListener("resize", resize);
+  window.addEventListener("resize", fitViewport);
+  window.addEventListener("orientationchange", fitViewport);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", fitViewport);
+    window.visualViewport.addEventListener("scroll", fitViewport);
+  }
   var blockKeys = { Space: 1, ArrowUp: 1, ArrowDown: 1, ArrowLeft: 1, ArrowRight: 1, KeyW: 1, KeyA: 1, KeyS: 1, KeyD: 1 };
   window.addEventListener("keydown", function (e) {
     if (blockKeys[e.code]) e.preventDefault();
