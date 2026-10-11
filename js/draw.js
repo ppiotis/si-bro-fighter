@@ -1370,12 +1370,14 @@ function render() {
   if (!ctx) return;
   var dpr = G.dpr || 1;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  var w = canvas.clientWidth || VIEW_W;
-  var h = canvas.clientHeight || VIEW_H;
-  var sc = Math.min(w / VIEW_W, h / VIEW_H);
+  var w = cssSize.w || canvas.clientWidth || VIEW_W;
+  var h = cssSize.h || canvas.clientHeight || VIEW_H;
+  var fill = landscapePhone();
+  var sc = fill ? Math.max(w / VIEW_W, h / VIEW_H) : Math.min(w / VIEW_W, h / VIEW_H);
   var ox = (w - VIEW_W * sc) / 2;
   var oy = (h - VIEW_H * sc) / 2;
-  if (h > w) oy = 8;
+  if (fill && oy < 0) oy = 0;
+  if (!fill && h > w) oy = 8;
   G.layout = { ox: ox, oy: oy, sc: sc };
   ctx.fillStyle = "#05060a";
   ctx.fillRect(0, 0, w, h);
@@ -1405,6 +1407,7 @@ function render() {
 }
 
 var canvas, ctx;
+var cssSize = { w: 0, h: 0 };
 function landscapePhone() {
   return window.matchMedia("(orientation: landscape) and (max-height: 520px)").matches;
 }
@@ -1426,11 +1429,19 @@ function fitViewport() {
 }
 function resize() {
   var dpr = Math.min(2, window.devicePixelRatio || 1);
-  var w = canvas.clientWidth || window.innerWidth;
-  var h = canvas.clientHeight || window.innerHeight;
+  var stage = document.getElementById("stage") || canvas;
+  var box = stage.getBoundingClientRect();
+  var w = Math.max(1, box.width || canvas.clientWidth || window.innerWidth);
+  var h = Math.max(1, box.height || canvas.clientHeight || window.innerHeight);
+  cssSize.w = w;
+  cssSize.h = h;
+  G.dpr = dpr;
+  canvas.style.width = w + "px";
+  canvas.style.height = h + "px";
   canvas.width = Math.max(1, Math.floor(w * dpr));
   canvas.height = Math.max(1, Math.floor(h * dpr));
-  G.dpr = dpr;
+  canvas.style.width = w + "px";
+  canvas.style.height = h + "px";
 }
 function toGame(e) {
   var r = canvas.getBoundingClientRect();
@@ -1502,6 +1513,7 @@ function boot() {
     }
   }
   fitViewport();
+  requestAnimationFrame(fitViewport);
   canvas.focus();
   window.addEventListener("resize", fitViewport);
   window.addEventListener("orientationchange", fitViewport);
