@@ -1,0 +1,9 @@
+{
+  "name": "SI BRO FIGHTER",
+  "short_name": "SI Bro",
+  "start_url": "./",
+  "display": "fullscreen",
+  "background_color": "#05060a",
+  "theme_color": "#05060a",
+  "orientation": "any"
+}

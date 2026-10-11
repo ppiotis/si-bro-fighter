@@ -109,8 +109,9 @@ canvas {
   html, body {
     position: fixed;
     inset: 0;
-    width: var(--vvw, 100dvw);
-    height: var(--vvh, 100dvh);
+    width: var(--vvw, 100%);
+    height: var(--vvh, 100%);
+    height: var(--vvh, 100svh);
   }
 
   #app {
@@ -119,8 +120,9 @@ canvas {
     position: fixed;
     top: var(--vv-top, 0px);
     left: var(--vv-left, 0px);
-    width: var(--vvw, 100dvw);
-    height: var(--vvh, 100dvh);
+    width: var(--vvw, 100%);
+    height: var(--vvh, 100%);
+    height: var(--vvh, 100svh);
     display: block;
   }
 
@@ -184,6 +186,42 @@ canvas {
     border-radius: 8px;
     font-size: 12px;
   }
+}
+
+#fs {
+  position: fixed;
+  z-index: 6;
+  top: max(8px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  border: 2px solid #fff;
+  background: rgba(8, 12, 22, 0.88);
+  color: #fff;
+  font: 700 14px/1 Impact, Haettenschweiler, "Arial Black", sans-serif;
+  letter-spacing: 0.06em;
+  padding: 10px 14px;
+  border-radius: 999px;
+  touch-action: manipulation;
+  max-width: calc(100vw - 180px);
+  text-align: center;
+  white-space: normal;
+}
+
+html.fs-on #fs,
+html:fullscreen #fs,
+html:-webkit-full-screen #fs {
+  display: none;
+}
+
+html:fullscreen,
+html:-webkit-full-screen,
+html:fullscreen body,
+html:-webkit-full-screen body,
+html:fullscreen #app,
+html:-webkit-full-screen #app {
+  width: 100%;
+  height: 100%;
+  background: #05060a;
 }
 
 #testlog[hidden] { display: none !important; }

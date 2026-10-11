@@ -1411,14 +1411,47 @@ var cssSize = { w: 0, h: 0 };
 function landscapePhone() {
   return window.matchMedia("(orientation: landscape) and (max-height: 520px)").matches;
 }
+function phoneScreen() {
+  return window.matchMedia("(pointer: coarse)").matches || window.matchMedia("(max-width: 900px)").matches;
+}
+function inFullscreen() {
+  return !!(document.fullscreenElement || document.webkitFullscreenElement);
+}
+function installedApp() {
+  return window.navigator.standalone === true || window.matchMedia("(display-mode: standalone)").matches || window.matchMedia("(display-mode: fullscreen)").matches;
+}
+function iosPhone() {
+  return /iPhone|iPod/.test(navigator.userAgent || "");
+}
+var svhCache = { w: 0, h: 0, svh: 0 };
+function smallViewportHeight() {
+  var w = window.innerWidth || 0;
+  var ih = window.innerHeight || 0;
+  if (svhCache.w === w && svhCache.h === ih && svhCache.svh) return svhCache.svh;
+  var probe = document.createElement("div");
+  probe.style.cssText = "position:fixed;left:0;top:0;height:100svh;width:0;pointer-events:none;visibility:hidden;";
+  document.documentElement.appendChild(probe);
+  var h = probe.getBoundingClientRect().height || 0;
+  if (probe.parentNode) probe.parentNode.removeChild(probe);
+  if (h) svhCache = { w: w, h: ih, svh: h };
+  return h;
+}
 function fitViewport() {
   var vv = window.visualViewport;
   var root = document.documentElement.style;
-  if (vv && landscapePhone()) {
-    root.setProperty("--vvw", vv.width + "px");
-    root.setProperty("--vvh", vv.height + "px");
-    root.setProperty("--vv-top", vv.offsetTop + "px");
-    root.setProperty("--vv-left", vv.offsetLeft + "px");
+  if (vv && (landscapePhone() || phoneScreen())) {
+    var h = vv.height;
+    var w = vv.width;
+    var top = vv.offsetTop || 0;
+    if (!inFullscreen() && !installedApp()) {
+      var svh = smallViewportHeight();
+      if (svh && svh < h) h = svh;
+      if (window.innerHeight && window.innerHeight < h) h = window.innerHeight;
+    }
+    root.setProperty("--vvw", w + "px");
+    root.setProperty("--vvh", h + "px");
+    root.setProperty("--vv-top", top + "px");
+    root.setProperty("--vv-left", (vv.offsetLeft || 0) + "px");
   } else {
     root.removeProperty("--vvw");
     root.removeProperty("--vvh");
@@ -1426,6 +1459,109 @@ function fitViewport() {
     root.removeProperty("--vv-left");
   }
   resize();
+}
+function hideBrowserChrome() {
+  var root = document.documentElement;
+  var body = document.body;
+  var pad = document.getElementById("scrollpad");
+  if (!pad) {
+    pad = document.createElement("div");
+    pad.id = "scrollpad";
+    pad.style.cssText = "height:120px;width:1px;";
+    body.appendChild(pad);
+  }
+  root.style.position = "relative";
+  body.style.position = "relative";
+  root.style.height = "auto";
+  body.style.height = "auto";
+  root.style.overflow = "auto";
+  body.style.overflow = "auto";
+  window.scrollTo(0, 80);
+  setTimeout(function () {
+    window.scrollTo(0, 1);
+    root.style.position = "";
+    body.style.position = "";
+    root.style.height = "";
+    body.style.height = "";
+    root.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    if (pad && pad.parentNode) pad.parentNode.removeChild(pad);
+    fitViewport();
+  }, 120);
+}
+function syncFullscreenButton() {
+  var btn = document.getElementById("fs");
+  if (!btn) return;
+  if (!phoneScreen() || inFullscreen() || installedApp()) {
+    btn.hidden = true;
+    if (inFullscreen() || installedApp()) document.documentElement.classList.add("fs-on");
+    return;
+  }
+  btn.hidden = false;
+  if (iosPhone() && !(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen)) {
+    btn.textContent = "IPHONE: SHARE → ADD TO HOME SCREEN";
+  }
+}
+function goFullscreen() {
+  if (inFullscreen() || installedApp()) {
+    document.documentElement.classList.add("fs-on");
+    syncFullscreenButton();
+    fitViewport();
+    return;
+  }
+  var el = document.documentElement;
+  var req = el.requestFullscreen || el.webkitRequestFullscreen;
+  var failed = function () {
+    document.documentElement.classList.remove("fs-on");
+    hideBrowserChrome();
+    var btn = document.getElementById("fs");
+    if (btn && iosPhone()) {
+      btn.textContent = "IPHONE: SHARE → ADD TO HOME SCREEN";
+      btn.hidden = false;
+    }
+    fitViewport();
+  };
+  var done = function () {
+    if (!inFullscreen()) { failed(); return; }
+    document.documentElement.classList.add("fs-on");
+    syncFullscreenButton();
+    fitViewport();
+  };
+  if (!req) { failed(); return; }
+  var pending;
+  try { pending = req.call(el, { navigationUI: "hide" }); }
+  catch (err) {
+    try { pending = req.call(el); }
+    catch (err2) { failed(); return; }
+  }
+  if (pending && pending.then) pending.then(done, failed);
+  else setTimeout(done, 60);
+}
+function setupFullscreen() {
+  var asked = false;
+  syncFullscreenButton();
+  document.addEventListener("pointerdown", function (e) {
+    if (asked || !phoneScreen() || (G && G.trailer)) return;
+    var t = e.target;
+    if (t && t.nodeType !== 1) t = t.parentElement;
+    if (t && t.closest && t.closest("#fs")) return;
+    asked = true;
+    goFullscreen();
+  }, true);
+  var btn = document.getElementById("fs");
+  if (btn) btn.addEventListener("pointerdown", function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (btn.textContent.indexOf("HOME SCREEN") !== -1) {
+      btn.hidden = true;
+      hideBrowserChrome();
+      return;
+    }
+    asked = true;
+    goFullscreen();
+  });
+  document.addEventListener("fullscreenchange", function () { syncFullscreenButton(); fitViewport(); });
+  document.addEventListener("webkitfullscreenchange", function () { syncFullscreenButton(); fitViewport(); });
 }
 function resize() {
   var dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -1521,6 +1657,7 @@ function boot() {
     window.visualViewport.addEventListener("resize", fitViewport);
     window.visualViewport.addEventListener("scroll", fitViewport);
   }
+  if (!q.has("trailer")) setupFullscreen();
   var blockKeys = { Space: 1, ArrowUp: 1, ArrowDown: 1, ArrowLeft: 1, ArrowRight: 1, KeyW: 1, KeyA: 1, KeyS: 1, KeyD: 1 };
   window.addEventListener("keydown", function (e) {
     if (blockKeys[e.code]) e.preventDefault();
