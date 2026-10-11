@@ -1372,13 +1372,10 @@ function render() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   var w = canvas.clientWidth || VIEW_W;
   var h = canvas.clientHeight || VIEW_H;
-  var cover = landscapePhone();
-  var sc = cover ? Math.max(w / VIEW_W, h / VIEW_H) : Math.min(w / VIEW_W, h / VIEW_H);
+  var sc = Math.min(w / VIEW_W, h / VIEW_H);
   var ox = (w - VIEW_W * sc) / 2;
-  var extraY = h - VIEW_H * sc;
-  // Landscape phones are wider than 16:9. Pin the HUD to the top and crop the floor.
-  var oy = cover ? (extraY < 0 ? 0 : extraY / 2) : extraY / 2;
-  if (!cover && h > w) oy = 8;
+  var oy = (h - VIEW_H * sc) / 2;
+  if (h > w) oy = 8;
   G.layout = { ox: ox, oy: oy, sc: sc };
   ctx.fillStyle = "#05060a";
   ctx.fillRect(0, 0, w, h);
