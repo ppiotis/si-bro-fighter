@@ -1,0 +1,88 @@
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #05060a;
+  color: #f4f7ff;
+  font-family: Impact, Haettenschweiler, "Arial Black", sans-serif;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+canvas {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  display: block;
+  touch-action: none;
+  outline: none;
+  cursor: pointer;
+}
+
+#touch {
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 8px 12px;
+  background: linear-gradient(#12141c, #07080c);
+  border-top: 2px solid #2a3148;
+  flex-shrink: 0;
+}
+
+.row {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+  width: 100%;
+}
+
+#touch, #touch * { box-sizing: border-box; }
+
+#touch button {
+  appearance: none;
+  border: 2px solid #d7e6ff;
+  background: #182033;
+  color: #f7fbff;
+  font: 700 13px/1 Impact, Haettenschweiler, "Arial Black", sans-serif;
+  letter-spacing: 0.04em;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 46px;
+  border-radius: 10px;
+  padding: 0 4px;
+  touch-action: none;
+}
+
+#touch button:active,
+#touch button.held {
+  background: #ffb703;
+  color: #1a1204;
+  border-color: #fff;
+}
+
+#testlog {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  max-width: min(640px, 96vw);
+  max-height: 40vh;
+  overflow: auto;
+  background: rgba(0, 0, 0, 0.8);
+  color: #b6ffb0;
+  font: 12px/1.4 ui-monospace, monospace;
+  padding: 8px;
+  border: 1px solid #345;
+  white-space: pre-wrap;
+}
+
+@media (pointer: coarse), (max-width: 900px) {
+  #touch { display: flex; }
+}
+
+#testlog[hidden] { display: none !important; }
